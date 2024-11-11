@@ -98,7 +98,7 @@ async fn download(
         file.write_all(&chunk).await?;
         stats.record_chunk_transfer(chunk.len());
         let _ = on_progress.send(ProgressPayload {
-            progress: chunk.len() as u64,
+            progress: stats.total_transferred,
             total,
             transfer_speed: stats.transfer_speed,
         });
