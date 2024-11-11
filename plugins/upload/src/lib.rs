@@ -61,6 +61,7 @@ impl Serialize for Error {
 #[serde(rename_all = "camelCase")]
 struct ProgressPayload {
     progress: u64,
+    progress_total: u64,
     total: u64,
     transfer_speed: u64,
 }
@@ -98,7 +99,8 @@ async fn download(
         file.write_all(&chunk).await?;
         stats.record_chunk_transfer(chunk.len());
         let _ = on_progress.send(ProgressPayload {
-            progress: stats.total_transferred,
+            progress: chunk.len() as u64,
+            progress_total: stats.total_transferred,
             total,
             transfer_speed: stats.transfer_speed,
         });
@@ -153,6 +155,7 @@ fn file_to_body(channel: Channel<ProgressPayload>, file: File) -> reqwest::Body 
             stats.record_chunk_transfer(progress as usize);
             let _ = channel.send(ProgressPayload {
                 progress,
+                progress_total: stats.total_transferred,
                 total,
                 transfer_speed: stats.transfer_speed,
             });
